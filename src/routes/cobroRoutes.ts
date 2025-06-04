@@ -6,9 +6,7 @@ const router = Router()
 
 router.post('/', protect, crearCobro)
 router.get('/', protect, obtenerCobros)
-//router.get('/:id', protect, obtenerCobroPorId)
-//router.put('/:id', protect, actualizarCobro)
-//router.delete('/:id', protect, eliminarCobro)
+
 
 router.get('/:id',protect, (req, res, next) => {
   obtenerCobroPorId(req, res).catch(next)
