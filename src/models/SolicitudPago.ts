@@ -10,6 +10,8 @@ export interface ISolicitudPago extends Document {
   estado: 'pendiente' | 'pagado' | 'vencido'
   tokenPublico: string
   fechaCreacion: Date
+  fechaPago?: Date
+  fechaExpiracion?: Date
 }
 
 const SolicitudPagoSchema: Schema = new Schema({
@@ -46,7 +48,15 @@ const SolicitudPagoSchema: Schema = new Schema({
   fechaCreacion: {
     type: Date,
     default: Date.now
-  }
+  },
+  fechaPago: {
+    type: Date,
+    default: null
+  },
+  fechaExpiracion: {
+  type: Date,
+  default: null
+}
 })
 
 export const SolicitudPago = mongoose.model<ISolicitudPago>('SolicitudPago', SolicitudPagoSchema)

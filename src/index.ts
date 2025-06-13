@@ -27,6 +27,16 @@ app.get('/', (req, res) => {
   res.send('API Pagolisto funcionando')
 })
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`)
-})
+// app.listen(PORT, () => {
+//   console.log(`Servidor corriendo en http://localhost:${PORT}`)
+// })
+
+export default app
+
+// solo iniciar el servidor si no estamos en test
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 3000
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`)
+  })
+}

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { Cobro } from '../models/Cobro'
 import { AuthRequest } from '../middlewares/authMiddleware'
+import { createdResponse, errorResponse, successResponse } from '../utils/response'
 
 // Crear un nuevo cobro
 export const crearCobro = async (req: AuthRequest, res: Response) => {
@@ -12,14 +13,14 @@ export const crearCobro = async (req: AuthRequest, res: Response) => {
       monto,
       tipoPago,
       descripcion,
-      comercioId: req.user.id // lo que recuperamos del token
+      comercioId: req.user.id
     })
 
     await nuevoCobro.save()
 
-    res.status(201).json({ message: 'Cobro registrado correctamente', cobro: nuevoCobro })
+    return createdResponse(res, 'Cobro registrado correctamente', nuevoCobro)
   } catch (error) {
-    res.status(500).json({ message: 'Error al registrar el cobro', error })
+    return errorResponse(res, 'Error al registrar el cobro', 500, error)
   }
 }
 
@@ -27,9 +28,9 @@ export const crearCobro = async (req: AuthRequest, res: Response) => {
 export const obtenerCobros = async (req: AuthRequest, res: Response) => {
   try {
     const cobros = await Cobro.find({ comercioId: req.user.id }).sort({ fechaRegistro: -1 })
-    res.json({ cobros })
+    return successResponse(res, 'Cobros obtenidos correctamente', cobros)
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los cobros', error })
+    return errorResponse(res, 'Error al obtener los cobros', 500, error)
   }
 }
 
@@ -37,10 +38,13 @@ export const obtenerCobros = async (req: AuthRequest, res: Response) => {
 export const obtenerCobroPorId = async (req: AuthRequest, res: Response) => {
   try {
     const cobro = await Cobro.findOne({ _id: req.params.id, comercioId: req.user.id })
-    if (!cobro) return res.status(404).json({ message: 'Cobro no encontrado' })
-    res.json(cobro)
+    if (!cobro) {
+      return errorResponse(res, 'Cobro no encontrado', 404)
+    }
+
+    return successResponse(res, 'Cobro obtenido correctamente', cobro)
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el cobro', error })
+    return errorResponse(res, 'Error al obtener el cobro', 500, error)
   }
 }
 
@@ -55,11 +59,13 @@ export const actualizarCobro = async (req: AuthRequest, res: Response) => {
       { new: true }
     )
 
-    if (!cobro) return res.status(404).json({ message: 'Cobro no encontrado' })
+    if (!cobro) {
+      return errorResponse(res, 'Cobro no encontrado', 404)
+    }
 
-    res.json({ message: 'Cobro actualizado', cobro })
+    return successResponse(res, 'Cobro actualizado correctamente', cobro)
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar el cobro', error })
+    return errorResponse(res, 'Error al actualizar el cobro', 500, error)
   }
 }
 
@@ -68,11 +74,12 @@ export const eliminarCobro = async (req: AuthRequest, res: Response) => {
   try {
     const cobro = await Cobro.findOneAndDelete({ _id: req.params.id, comercioId: req.user.id })
 
-    if (!cobro) return res.status(404).json({ message: 'Cobro no encontrado' })
+    if (!cobro) {
+      return errorResponse(res, 'Cobro no encontrado', 404)
+    }
 
-    res.json({ message: 'Cobro eliminado correctamente' })
+    return successResponse(res, 'Cobro eliminado correctamente', null)
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el cobro', error })
+    return errorResponse(res, 'Error al eliminar el cobro', 500, error)
   }
 }
-

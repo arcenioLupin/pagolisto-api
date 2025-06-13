@@ -1,17 +1,20 @@
 import { Request, Response } from 'express'
 import { ComercioConfig } from '../models/ComercioConfig'
 import { AuthRequest } from '../middlewares/authMiddleware'
+import { createdResponse, errorResponse, successResponse } from '../utils/response'
 
 // Obtener configuración del comercio
 export const obtenerConfig = async (req: AuthRequest, res: Response) => {
   try {
     const config = await ComercioConfig.findOne({ comercioId: req.user.id })
 
-    if (!config) return res.status(404).json({ message: 'Configuración no encontrada' })
+    if (!config) {
+      return errorResponse(res, 'Configuración no encontrada', 404)
+    }
 
-    res.json(config)
+    return successResponse(res, 'Configuración obtenida correctamente', config)
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener la configuración', error })
+    return errorResponse(res, 'Error al obtener la configuración', 500, error)
   }
 }
 
@@ -27,7 +30,7 @@ export const guardarConfig = async (req: AuthRequest, res: Response) => {
       config.direccion = direccion
       config.metodosDePago = metodosDePago
       await config.save()
-      return res.json({ message: 'Configuración actualizada', config })
+      return successResponse(res, 'Configuración actualizada correctamente', config)
     }
 
     config = new ComercioConfig({
@@ -38,8 +41,8 @@ export const guardarConfig = async (req: AuthRequest, res: Response) => {
     })
 
     await config.save()
-    res.status(201).json({ message: 'Configuración creada', config })
+    return createdResponse(res, 'Configuración creada correctamente', config)
   } catch (error) {
-    res.status(500).json({ message: 'Error al guardar configuración', error })
+    return errorResponse(res, 'Error al guardar configuración', 500, error)
   }
 }
