@@ -1,13 +1,13 @@
 import request from 'supertest'
-import app from '../src/index' // Asegúrate que exportes `app` en `index.ts`
+import app from '../src/index'
 import mongoose from 'mongoose'
 
-describe('🛡️ Endpoints de Autenticación', () => {
+describe('🛡️ Authentication Endpoints', () => {
   const email = `testuser_${Date.now()}@mail.com`
   const password = 'TestPass123'
   const businessName = 'Test Company'
 
-  it('✅ debería registrar un nuevo usuario', async () => {
+  it('✅ should register a new user', async () => {
     const res = await request(app).post('/api/auth/register').send({
       email,
       password,
@@ -15,10 +15,10 @@ describe('🛡️ Endpoints de Autenticación', () => {
     })
 
     expect(res.status).toBe(201)
-    expect(res.body.message).toMatch(/registrado/i)
+    expect(res.body.message).toMatch(/registered/i)
   })
 
-  it('✅ debería permitir iniciar sesión', async () => {
+  it('✅ should allow login', async () => {
     const res = await request(app).post('/api/auth/login').send({
       email,
       password
@@ -30,6 +30,6 @@ describe('🛡️ Endpoints de Autenticación', () => {
   })
 
   afterAll(async () => {
-  await mongoose.connection.close()
-})
+    await mongoose.connection.close()
+  })
 })

@@ -3,17 +3,16 @@ import app from '../src/index'
 import mongoose from 'mongoose'
 import jwt from 'jsonwebtoken'
 
-// Usa la misma clave que en tu .env o authController
 const JWT_SECRET = process.env.JWT_SECRET || 'pagolistoDev'
 
-describe('💳 Endpoints de Solicitudes de Pago', () => {
+describe('💳 Payment Request Endpoints', () => {
   let token: string
 
-  // Generamos un token simulado con un ID de comercio ficticio
+  // Generate a simulated token with a dummy merchant ID
   beforeAll(() => {
     const payload = {
       id: '111111111111111111111111',
-      email: 'testcomercio@pagolisto.com'
+      email: 'testmerchant@pagolisto.com'
     }
     token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' })
   })
@@ -22,29 +21,28 @@ describe('💳 Endpoints de Solicitudes de Pago', () => {
     await mongoose.connection.close()
   })
 
-  it('✅ debería crear una nueva solicitud de pago', async () => {
+  it('✅ should create a new payment request', async () => {
     const res = await request(app)
-      .post('/api/solicitudes')
+      .post('/api/payment-requests')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        cliente: 'Juan Pérez',
-        monto: 150,
-        tipoPago: 'Yape',
-        descripcion: 'Servicio técnico'
+        client: 'Juan Pérez',
+        amount: 150,
+        paymentType: 'Yape',
+        description: 'Technical service'
       })
 
     expect(res.status).toBe(201)
-    //console.log('res.body: ',res.body)
     expect(res.body.data).toHaveProperty('_id')
-    expect(res.body.data.cliente).toBe('Juan Pérez')
+    expect(res.body.data.client).toBe('Juan Pérez')
   })
 
-  it('✅ debería obtener todas las solicitudes del comercio', async () => {
+  it('✅ should retrieve all payment requests for the merchant', async () => {
     const res = await request(app)
-      .get('/api/solicitudes')
+      .get('/api/payment-requests')
       .set('Authorization', `Bearer ${token}`)
 
     expect(res.status).toBe(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    expect(Array.isArray(res.body.data)).toBe(true)
   })
 })

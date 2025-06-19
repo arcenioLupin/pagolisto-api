@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
-import { ComercioConfig } from '../models/ComercioConfig'
+import { MerchantConfig } from '../models/MerchantConfig'
 import { AuthRequest } from '../middlewares/authMiddleware'
 import { createdResponse, errorResponse, successResponse } from '../utils/response'
 
 // Obtener configuración del comercio
-export const obtenerConfig = async (req: AuthRequest, res: Response) => {
+export const getMerchantConfig = async (req: AuthRequest, res: Response) => {
   try {
-    const config = await ComercioConfig.findOne({ comercioId: req.user.id })
+    const config = await MerchantConfig.findOne({ merchantId: req.user.id })
 
     if (!config) {
       return errorResponse(res, 'Configuración no encontrada', 404)
@@ -19,25 +19,26 @@ export const obtenerConfig = async (req: AuthRequest, res: Response) => {
 }
 
 // Crear o actualizar configuración del comercio
-export const guardarConfig = async (req: AuthRequest, res: Response) => {
+export const saveMerchantConfig = async (req: AuthRequest, res: Response) => {
   try {
-    const { telefono, direccion, metodosDePago } = req.body
+    const { phone, address, paymentsMethod } = req.body
 
-    let config = await ComercioConfig.findOne({ comercioId: req.user.id })
+    let config = await MerchantConfig.findOne({ merchantId: req.user.id })
 
     if (config) {
-      config.telefono = telefono
-      config.direccion = direccion
-      config.metodosDePago = metodosDePago
+      config.phone = phone
+      config.address = address
+      config.paymentsMethod = paymentsMethod
       await config.save()
       return successResponse(res, 'Configuración actualizada correctamente', config)
     }
 
-    config = new ComercioConfig({
-      comercioId: req.user.id,
-      telefono,
-      direccion,
-      metodosDePago
+    config = new MerchantConfig({
+      merchantId: req.user.id,
+      phone,
+      address,
+      paymentsMethod: paymentsMethod || [], // Asegurarse de que sea un array
+      
     })
 
     await config.save()
