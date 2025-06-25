@@ -6,7 +6,7 @@ import { createdResponse, errorResponse, successResponse } from '../utils/respon
 // Crear un nuevo cobro
 export const createCharge = async (req: AuthRequest, res: Response) => {
   try {
-    const { client, amount, paymentType, description } = req.body
+    const { client, amount, paymentType, description, expirationDate } = req.body
 
     const newCharge = new Charge({
       client,
@@ -14,7 +14,8 @@ export const createCharge = async (req: AuthRequest, res: Response) => {
       paymentType,
       status: 'pending', // Estado inicial
       description,
-      merchantId: req.user.id
+      merchantId: req.user.id,
+      expirationDate
     })
 
     await newCharge.save()
@@ -28,8 +29,20 @@ export const createCharge = async (req: AuthRequest, res: Response) => {
 // Obtener todos los cobros del comercio autenticado
 export const getCharges = async (req: AuthRequest, res: Response) => {
   try {
-    const charges = await Charge.find({ merchantId: req.user.id }).sort({ createdAt: -1 })
-    return successResponse(res, 'Cobros obtenidos correctamente', charges)
+    const charges = await Charge.find({ merchantId: req.user.id }).sort({ createdAt: -1 });
+    const now = new Date();
+
+    const updates = charges.map(async (c) => {
+      if (c.status === 'pending' && c.expirationDate && new Date(c.expirationDate) < now) {
+        c.status = 'expired'
+        await c.save()
+      }
+    });
+
+    await Promise.all(updates)
+
+    const updatedCharges = await Charge.find({ merchantId: req.user.id }).sort({ createdAt: -1 })
+    return successResponse(res, 'Cobros obtenidos correctamente', updatedCharges)
   } catch (error) {
     return errorResponse(res, 'Error al obtener los cobros', 500, error)
   }
@@ -52,11 +65,11 @@ export const getChargeById = async (req: AuthRequest, res: Response) => {
 // Actualizar un cobro
 export const updateCharge = async (req: AuthRequest, res: Response) => {
   try {
-     const { client, amount, paymentType, description } = req.body
+     const { client, amount, paymentType, description, expirationDate } = req.body
 
     const charge = await Charge.findOneAndUpdate(
       { _id: req.params.id, merchantId: req.user.id },
-      { client, amount, paymentType, description },
+      { client, amount, paymentType, description,expirationDate },
       { new: true }
     )
 

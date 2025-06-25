@@ -8,6 +8,7 @@ export interface ICharge extends Document {
   description?: string
   merchantId: mongoose.Types.ObjectId
   createdAt: Date
+  expirationDate?: Date
 }
 
 const ChargeSchema: Schema = new Schema({
@@ -39,6 +40,10 @@ const ChargeSchema: Schema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  expirationDate: {
+    type: Date,
+    default: null
   }
 })
 
