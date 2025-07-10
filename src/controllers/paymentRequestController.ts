@@ -21,6 +21,7 @@ export const createPaymentRequest = async (req: AuthRequest, res: Response) => {
       client,
       amount,
       paymentType,
+       status: 'pending', // Estado inicial
       description,
       expirationDate,
     })
@@ -128,8 +129,9 @@ export const resendPaymentRequest = async (req: AuthRequest, res: Response) => {
 // Mark as paid (client)
 export const markAsPaidPublic = async (req: Request, res: Response) => {
   try {
+
     const { publicToken } = req.params
-    const request = await PaymentRequest.findOne({ publicToken })
+    const request = await PaymentRequest.findOne({publicToken })
 
     if (!request) {
       return errorResponse(res, 'Payment request not found', 400)
@@ -155,8 +157,37 @@ export const markAsPaidPublic = async (req: Request, res: Response) => {
 
     console.log(`✅ Client marked request as paid. ID: ${request._id}`)
 
-    return createdResponse(res, 'Payment marked successfully', null)
+    return createdResponse(res, 'Payment marked successfully', request)
   } catch (error) {
     return errorResponse(res, 'Error marking as paid', 500, error)
   }
 }
+
+export const cancelPaymentRequest = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+
+    const request = await PaymentRequest.findById(id)
+
+    if (!request) {
+      return res.status(404).json({ message: 'Payment request not found' })
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({ message: 'Only pending requests can be cancelled' })
+    }
+
+    request.status = 'cancelled'
+    await request.save()
+    logActivity('Payment request marked as cancelled', {
+        requestId: request._id,
+        client: request.client,
+        amount: request.amount,
+      })
+    return createdResponse(res, 'Payment request cancelled successfully', request)
+  } catch (error) {
+    return errorResponse(res, 'Error marking as cancelled', 500, error)
+  }
+  
+}
+

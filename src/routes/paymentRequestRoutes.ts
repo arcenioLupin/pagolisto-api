@@ -5,7 +5,8 @@ import {
   getPublicPaymentRequest,
   markAsPaid,
   resendPaymentRequest,
-  markAsPaidPublic
+  markAsPaidPublic,
+  cancelPaymentRequest
 } from '../controllers/paymentRequestController'
 import { protect } from '../middlewares/authMiddleware'
 
@@ -36,8 +37,12 @@ router.post('/:id/resend', protect, (req, res, next) => {
 })
 
 // Mark as paid (client)
-router.put('/public/:token/mark-paid', (req, res, next) => {
+router.put('/public/:publicToken/mark-paid', (req, res, next) => {
   markAsPaidPublic(req, res).catch(next)
 })
+// PATCH /payment-requests/:id/cancel
+router.patch('/:id/cancel', (req, res, next) =>{
+  cancelPaymentRequest(req, res).catch(next)
+}) 
 
 export default router

@@ -7,7 +7,7 @@ export interface IPaymentRequest extends Document {
   amount: number
   paymentType: string
   description?: string
-  status: 'pending' | 'paid' | 'expired'
+  status: 'pending' | 'paid' | 'expired' | 'cancelled'
   publicToken: string
   createdAt: Date
   paymentDate?: Date
@@ -37,7 +37,7 @@ const PaymentRequestSchema: Schema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'paid', 'expired'],
+    enum: ['pending', 'paid', 'expired','cancelled'],
     default: 'pending'
   },
   publicToken: {
