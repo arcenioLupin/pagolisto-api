@@ -24,11 +24,17 @@ export const register = async (req: Request, res: Response) => {
       businessName,
     })
 
-    await newUser.save()
+    const user = await newUser.save()
 
-    return createdResponse(res, 'Usuario registrado correctamente', {
-      email: newUser.email,
-      businessName: newUser.businessName,
+      const token = jwt.sign(
+      { id: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
+    return createdResponse(res, 'Usuario registrado correctamente',{
+      token,
+      user: { email: user.email, businessName: user.businessName },
     })
   } catch (error) {
     return errorResponse(res, 'Error al registrar usuario', 500, error)

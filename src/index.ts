@@ -13,8 +13,14 @@ connectDB()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173'
 
-app.use(cors())
+app.use(cors({
+  origin: allowedOrigin, 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(helmet())
 app.use(express.json())
 app.use('/api/auth', authRoutes)

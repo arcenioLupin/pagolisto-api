@@ -4,11 +4,10 @@ export interface ICharge extends Document {
   client: string
   amount: number
   paymentType: string,
-  status: 'pending' | 'paid' | 'cancelled' | 'expired',
+  status: 'paid',
   description?: string
   merchantId: mongoose.Types.ObjectId
   createdAt: Date
-  expirationDate?: Date
 }
 
 const ChargeSchema: Schema = new Schema({
@@ -26,8 +25,8 @@ const ChargeSchema: Schema = new Schema({
   },
   status: {
   type: String,
-  enum: ['pending', 'paid', 'cancelled', 'expired'],
-  default: 'pending'
+  enum: ['paid'],
+  default: 'paid'
 },
   description: {
     type: String
@@ -40,10 +39,6 @@ const ChargeSchema: Schema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  },
-  expirationDate: {
-    type: Date,
-    default: null
   }
 })
 

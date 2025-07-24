@@ -6,16 +6,15 @@ import { createdResponse, errorResponse, successResponse } from '../utils/respon
 // Crear un nuevo cobro
 export const createCharge = async (req: AuthRequest, res: Response) => {
   try {
-    const { client, amount, paymentType, description, expirationDate } = req.body
+    const { client, amount, paymentType, description } = req.body
 
     const newCharge = new Charge({
       client,
       amount,
       paymentType,
-      status: 'pending', // Estado inicial
+      status: 'paid', // Estado inicial
       description,
-      merchantId: req.user.id,
-      expirationDate
+      merchantId: req.user.id
     })
 
     await newCharge.save()
@@ -30,16 +29,7 @@ export const createCharge = async (req: AuthRequest, res: Response) => {
 export const getCharges = async (req: AuthRequest, res: Response) => {
   try {
     const charges = await Charge.find({ merchantId: req.user.id }).sort({ createdAt: -1 });
-    const now = new Date();
-
-    const updates = charges.map(async (c) => {
-      if (c.status === 'pending' && c.expirationDate && new Date(c.expirationDate) < now) {
-        c.status = 'expired'
-        await c.save()
-      }
-    });
-
-    await Promise.all(updates)
+    await Promise.all(charges)
 
     const updatedCharges = await Charge.find({ merchantId: req.user.id }).sort({ createdAt: -1 })
     return successResponse(res, 'Cobros obtenidos correctamente', updatedCharges)

@@ -5,6 +5,7 @@ import { logActivity } from '../utils/logger'
 import { User } from '../models/User'
 import { notifyMerchant } from '../utils/notifier'
 import { Types } from 'mongoose'
+import { startOfToday, isBefore } from 'date-fns'
 import {
   createdResponse,
   errorResponse,
@@ -44,12 +45,12 @@ export const createPaymentRequest = async (req: AuthRequest, res: Response) => {
 // Get all payment requests for the merchant
 export const getPaymentRequests = async (req: AuthRequest, res: Response) => {
   try {
-    const now = new Date()
+    const today = startOfToday()
 
     const requests = await PaymentRequest.find({ merchantId: req.user.id }).sort({ createdAt: -1 })
 
     const updates = requests.map(async (r) => {
-      if (r.status === 'pending' && r.expirationDate && r.expirationDate < now) {
+      if (r.status === 'pending' && r.expirationDate && isBefore(new Date(r.expirationDate), today)) {
         r.status = 'expired'
         await r.save()
       }
