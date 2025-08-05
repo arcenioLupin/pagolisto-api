@@ -7,7 +7,7 @@ export interface IPaymentRequest extends Document {
   amount: number
   paymentType: string
   description?: string
-  status: 'pending' | 'paid' | 'expired' | 'cancelled'
+  status: 'pending' | 'paid' | 'expired' | 'cancelled' | 'review_pending'
   publicToken: string
   createdAt: Date
   paymentDate?: Date
@@ -37,7 +37,7 @@ const PaymentRequestSchema: Schema = new Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'paid', 'expired','cancelled'],
+    enum: ['pending', 'paid', 'expired','cancelled','review_pending'],
     default: 'pending'
   },
   publicToken: {
@@ -57,6 +57,7 @@ const PaymentRequestSchema: Schema = new Schema({
     type: Date,
     default: null
   }
+
 })
 
 export const PaymentRequest = mongoose.model<IPaymentRequest>('PaymentRequest', PaymentRequestSchema)

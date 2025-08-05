@@ -64,7 +64,7 @@ export const login = async (req: Request, res: Response) => {
 
     return successResponse(res, 'Inicio de sesión exitoso', {
       token,
-      user: { email: user.email, businessName: user.businessName },
+      user: { email: user.email, businessName: user.businessName, merchantId: user._id},
     })
   } catch (error) {
     return errorResponse(res, 'Error al iniciar sesión', 500, error)

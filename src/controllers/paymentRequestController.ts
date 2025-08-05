@@ -11,6 +11,7 @@ import {
   errorResponse,
   successResponse,
 } from '../utils/response'
+import { Charge } from '../models/Charge'
 
 // Create new payment request
 export const createPaymentRequest = async (req: AuthRequest, res: Response) => {
@@ -92,11 +93,24 @@ export const markAsPaid = async (req: AuthRequest, res: Response) => {
       return errorResponse(res, 'Payment request not found', 400)
     }
 
+     // Marcar como pagado
     request.status = 'paid'
     request.paymentDate = new Date()
-
     await request.save()
 
+    // Crear el Charge automáticamente
+    await Charge.create({
+      merchantId: request.merchantId,
+      amount: request.amount,
+      client: request.client,
+      description: request.description,
+      paymentType: request.paymentType,
+      status: 'paid',
+      createdFrom: 'payment-request',
+      paymentRequestId: request._id
+    })
+
+    // Registrar en log
     logActivity('Payment request marked as paid', {
       requestId: request._id,
       paymentDate: request.paymentDate,
@@ -128,41 +142,43 @@ export const resendPaymentRequest = async (req: AuthRequest, res: Response) => {
 }
 
 // Mark as paid (client)
+// Cliente indica que ya realizó el pago (pasa a estado "review_pending")
 export const markAsPaidPublic = async (req: Request, res: Response) => {
   try {
-
     const { publicToken } = req.params
-    const request = await PaymentRequest.findOne({publicToken })
+    const request = await PaymentRequest.findOne({ publicToken })
 
     if (!request) {
       return errorResponse(res, 'Payment request not found', 400)
     }
 
     if (request.status !== 'pending') {
-      return errorResponse(res, `Cannot pay this request (status: ${request.status})`, 400)
+      return errorResponse(res, `Cannot report payment (status: ${request.status})`, 400)
     }
 
-    request.status = 'paid'
-    request.paymentDate = new Date()
+    // Cambiar el estado a 'review_pending'
+    request.status = 'review_pending'
     await request.save()
 
+    // Notificación al merchant (mock)
     const merchant = await User.findById(request.merchantId)
     if (merchant) {
       notifyMerchant(merchant.email, (request._id as Types.ObjectId).toString())
     }
 
-    logActivity('Payment request marked as paid by client', {
+    logActivity('Client reported payment (awaiting merchant review)', {
       requestId: request._id,
       publicToken,
     })
 
-    console.log(`✅ Client marked request as paid. ID: ${request._id}`)
+    console.log(`📩 Client reported payment. Request ID: ${request._id}`)
 
-    return createdResponse(res, 'Payment marked successfully', request)
+    return createdResponse(res, 'Tu pago fue reportado. El comercio lo revisará y confirmará.', request)
   } catch (error) {
-    return errorResponse(res, 'Error marking as paid', 500, error)
+    return errorResponse(res, 'Error reporting payment', 500, error)
   }
 }
+
 
 export const cancelPaymentRequest = async (req: Request, res: Response) => {
   try {
@@ -174,7 +190,7 @@ export const cancelPaymentRequest = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Payment request not found' })
     }
 
-    if (request.status !== 'pending') {
+   if (!['pending', 'review_pending'].includes(request.status)) {
       return res.status(400).json({ message: 'Only pending requests can be cancelled' })
     }
 

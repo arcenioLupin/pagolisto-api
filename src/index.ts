@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes'
 import chargeRoutes from './routes/chargeRoutes'
 import merchantConfigRoutes from './routes/merchantConfigRoutes'
 import paymentRequestRoutes from './routes/paymentRequestRoutes'
+import dashboardRoutes from './routes/dashboardRoutes'
 
 dotenv.config()
 connectDB()
@@ -27,6 +28,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/charges', chargeRoutes)
 app.use('/api/config', merchantConfigRoutes)
 app.use('/api/payment-requests', paymentRequestRoutes)
+app.use('/api/dashboard', dashboardRoutes)
+
 
 app.get('/', (req, res) => {
   res.send('Pagolisto API running')

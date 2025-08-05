@@ -5,9 +5,11 @@ export interface ICharge extends Document {
   amount: number
   paymentType: string,
   status: 'paid',
-  description?: string
-  merchantId: mongoose.Types.ObjectId
-  createdAt: Date
+  description?: string,
+  merchantId: mongoose.Types.ObjectId,
+  createdAt: Date,
+  createdFrom: 'manual' | 'payment-request',
+  paymentRequestId?: mongoose.Types.ObjectId
 }
 
 const ChargeSchema: Schema = new Schema({
@@ -39,7 +41,9 @@ const ChargeSchema: Schema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  createdFrom: { type: String, enum: ['manual', 'payment-request'], default: 'manual' },
+  paymentRequestId: { type: mongoose.Schema.Types.ObjectId, ref: 'PaymentRequest' },
 })
 
 export const Charge = mongoose.model<ICharge>('Charge', ChargeSchema)
