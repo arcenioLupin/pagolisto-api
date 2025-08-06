@@ -5,6 +5,8 @@ export interface IMerchantConfig extends Document {
   phone?: string,
   address?: string,
   paymentsMethod: string[],
+  walletQrImageYape?: string | null,
+  walletQrImagePlin?: string | null,
   createdAt: Date
 }
 
@@ -25,6 +27,14 @@ const MerchantConfigSchema: Schema = new Schema({
     type: [String],
     required: true
   },
+  walletQrImageYape: {
+    type: String,
+    default: null
+  },
+  walletQrImagePlin: {
+    type: String,
+    default: null
+  },  
   createdAt: {
     type: Date,
     default: Date.now

@@ -21,7 +21,7 @@ export const getMerchantConfig = async (req: AuthRequest, res: Response) => {
 // Crear o actualizar configuración del comercio
 export const saveMerchantConfig = async (req: AuthRequest, res: Response) => {
   try {
-    const { phone, address, paymentsMethod } = req.body
+    const { phone, address, paymentsMethod, walletQrImageYape, walletQrImagePlin } = req.body
 
     let config = await MerchantConfig.findOne({ merchantId: req.user.id })
 
@@ -29,6 +29,8 @@ export const saveMerchantConfig = async (req: AuthRequest, res: Response) => {
       config.phone = phone
       config.address = address
       config.paymentsMethod = paymentsMethod
+      config.walletQrImageYape = walletQrImageYape;
+      config.walletQrImagePlin = walletQrImagePlin;
       await config.save()
       return successResponse(res, 'Configuración actualizada correctamente', config)
     }
@@ -38,8 +40,9 @@ export const saveMerchantConfig = async (req: AuthRequest, res: Response) => {
       phone,
       address,
       paymentsMethod: paymentsMethod || [], // Asegurarse de que sea un array
-      
-    })
+      walletQrImageYape: walletQrImageYape || null,
+      walletQrImagePlin: walletQrImagePlin || null,    
+    });
 
     await config.save()
     return createdResponse(res, 'Configuración creada correctamente', config)

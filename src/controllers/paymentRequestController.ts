@@ -12,6 +12,7 @@ import {
   successResponse,
 } from '../utils/response'
 import { Charge } from '../models/Charge'
+import { MerchantConfig } from '../models/MerchantConfig' // asegúrate de importar esto
 
 // Create new payment request
 export const createPaymentRequest = async (req: AuthRequest, res: Response) => {
@@ -77,7 +78,16 @@ export const getPublicPaymentRequest = async (req: Request, res: Response) => {
       return errorResponse(res, 'Payment request not found', 400)
     }
 
-    return successResponse(res, 'Public payment request retrieved successfully', request)
+    // Buscar la configuración del comercio asociado
+    const config = await MerchantConfig.findOne({ merchantId: request.merchantId });
+
+    return successResponse(res, 'Public payment request retrieved successfully', {
+      paymentRequest: request,
+      merchantQr: {
+        yape: config?.walletQrImageYape || null,
+        plin: config?.walletQrImagePlin || null
+      }
+    });
   } catch (error) {
     return errorResponse(res, 'Error accessing payment request', 500, error)
   }
@@ -173,7 +183,7 @@ export const markAsPaidPublic = async (req: Request, res: Response) => {
 
     console.log(`📩 Client reported payment. Request ID: ${request._id}`)
 
-    return createdResponse(res, 'Tu pago fue reportado. El comercio lo revisará y confirmará.', request)
+    return createdResponse(res, 'Tu pago fue reportado. El comercio lo revisará y confirmará.',  {paymentRequest: request})
   } catch (error) {
     return errorResponse(res, 'Error reporting payment', 500, error)
   }
