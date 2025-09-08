@@ -6,9 +6,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist"
-    // "rootDir": "./src"  ✅ comentada o eliminada
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
-  
-  "include": ["src", "tests"]
+  "include": ["src"],
+  "exclude": ["tests"]
 }
