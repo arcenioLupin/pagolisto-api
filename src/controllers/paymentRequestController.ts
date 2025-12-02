@@ -85,8 +85,9 @@ export const getPublicPaymentRequest = async (req: Request, res: Response) => {
       paymentRequest: request,
       merchantQr: {
         yape: config?.walletQrImageYape || null,
-        plin: config?.walletQrImagePlin || null
-      }
+        plin: config?.walletQrImagePlin || null,
+      },
+      phone: config?.phone || null
     });
   } catch (error) {
     return errorResponse(res, 'Error accessing payment request', 500, error)
