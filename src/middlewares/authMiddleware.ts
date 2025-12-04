@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pagolistoDev'
+const JWT_SECRET = process.env.JWT_SECRET || 'controlWalletDev'
 
 interface AuthRequest extends Request {
   user?: any
