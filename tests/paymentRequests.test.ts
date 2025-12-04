@@ -3,7 +3,7 @@ import app from '../src/index'
 import mongoose from 'mongoose'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pagolistoDev'
+const JWT_SECRET = process.env.JWT_SECRET || 'controlWalletDev'
 
 describe('💳 Payment Request Endpoints', () => {
   let token: string
@@ -12,7 +12,7 @@ describe('💳 Payment Request Endpoints', () => {
   beforeAll(() => {
     const payload = {
       id: '111111111111111111111111',
-      email: 'testmerchant@pagolisto.com'
+      email: 'testmerchant@controlwallet.com'
     }
     token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' })
   })

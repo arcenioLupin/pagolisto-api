@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { User } from '../models/User'
 import { createdResponse, errorResponse, successResponse } from '../utils/response'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pagolistoDev'
+const JWT_SECRET = process.env.JWT_SECRET || 'controlWalletDev'
 
 // Registro de usuario (comercio)
 export const register = async (req: Request, res: Response) => {

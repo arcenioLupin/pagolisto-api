@@ -32,7 +32,7 @@ app.use('/api/dashboard', dashboardRoutes)
 
 
 app.get('/', (req, res) => {
-  res.send('Pagolisto API running')
+  res.send('ControlWallet API running')
 })
 
 export default app
