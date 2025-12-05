@@ -15,8 +15,11 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Faltan parámetros' })
     }
 
-    const from = new Date(startDate as string)
-    const to = new Date(endDate as string)
+    const rawFrom = new Date(startDate as string)
+    const rawTo = new Date(endDate as string)
+
+    const from = startOfDay(rawFrom)
+    const to = endOfDay(rawTo)
 
     const charges = await Charge.find({
       merchantId,
@@ -49,8 +52,11 @@ export const getPaymentMethodsSummary = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Faltan parámetros' })
     }
 
-    const from = new Date(startDate as string)
-    const to = new Date(endDate as string)
+    const rawFrom = new Date(startDate as string)
+    const rawTo = new Date(endDate as string)
+
+    const from = startOfDay(rawFrom)
+    const to = endOfDay(rawTo)
 
     const charges = await Charge.aggregate([
       {
@@ -91,8 +97,11 @@ export const getChargesOverTime = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Faltan parámetros' })
     }
 
-    const from = new Date(startDate as string)
-    const to = new Date(endDate as string)
+    const rawFrom = new Date(startDate as string)
+    const rawTo = new Date(endDate as string)
+
+    const from = startOfDay(rawFrom)
+    const to = endOfDay(rawTo)
 
     const data = await Charge.aggregate([
       {
@@ -130,8 +139,11 @@ export const getPaymentRequestsOverTime = async (req: Request, res: Response) =>
       return res.status(400).json({ message: 'Faltan parámetros' })
     }
 
-    const from = new Date(startDate as string)
-    const to = new Date(endDate as string)
+    const rawFrom = new Date(startDate as string)
+    const rawTo = new Date(endDate as string)
+
+    const from = startOfDay(rawFrom)
+    const to = endOfDay(rawTo)
 
     const result = await PaymentRequest.aggregate([
       {
