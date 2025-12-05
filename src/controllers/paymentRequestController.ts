@@ -94,45 +94,82 @@ export const getPublicPaymentRequest = async (req: Request, res: Response) => {
   }
 }
 
-// Mark as paid (merchant)
+// Mark payment request as paid (merchant)
 export const markAsPaid = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params
-    const request = await PaymentRequest.findOne({ _id: id, merchantId: req.user.id })
+
+    const request = await PaymentRequest.findOne({
+      _id: id,
+      merchantId: req.user.id,
+    })
 
     if (!request) {
-      return errorResponse(res, 'Payment request not found', 400)
+      return errorResponse(res, 'Payment request not found', 404)
     }
 
-     // Marcar como pagado
+    // Si ya está pagada o cancelada, no hacemos nada más (idempotente)
+    if (request.status === 'paid' || request.status === 'cancelled') {
+      const existingCharge = await Charge.findOne({
+        paymentRequestId: request._id,
+      })
+
+      // devolvemos OK con el estado actual, sin crear duplicados
+      return successResponse(res, 'Payment request already processed', {
+        paymentRequest: request,
+        charge: existingCharge ?? null,
+      })
+    }
+
+    // Solo permitimos pasar a paid desde estados válidos
+    if (!['pending', 'review_pending'].includes(request.status)) {
+      return errorResponse(
+        res,
+        `Cannot mark payment request as paid from status '${request.status}'`,
+        400
+      )
+    }
+
+    // Marcar como pagado
     request.status = 'paid'
     request.paymentDate = new Date()
     await request.save()
 
-    // Crear el Charge automáticamente
-    await Charge.create({
-      merchantId: request.merchantId,
-      amount: request.amount,
-      client: request.client,
-      description: request.description,
-      paymentType: request.paymentType,
-      status: 'paid',
-      createdFrom: 'payment-request',
-      paymentRequestId: request._id
+    // Crear Charge SOLO si no existe uno aún para esta request
+    let charge = await Charge.findOne({
+      paymentRequestId: request._id,
     })
 
-    // Registrar en log
+    if (!charge) {
+      charge = await Charge.create({
+        merchantId: request.merchantId,
+        amount: request.amount,
+        client: request.client,
+        description: request.description,
+        paymentType: request.paymentType,
+        status: 'paid',
+        createdFrom: 'payment-request',
+        paymentRequestId: request._id,
+      })
+    }
+
+    //Registrar en log
     logActivity('Payment request marked as paid', {
       requestId: request._id,
       paymentDate: request.paymentDate,
       merchantId: req.user.id,
     })
 
-    return createdResponse(res, 'Payment marked as paid', request)
+    // Devolvemos el nuevo estado + charge creado/encontrado
+    return createdResponse(res, 'Payment marked as paid', {
+      paymentRequest: request,
+      charge,
+    })
   } catch (error) {
     return errorResponse(res, 'Error marking as paid', 500, error)
   }
 }
+
 
 // Resend payment request (mock)
 export const resendPaymentRequest = async (req: AuthRequest, res: Response) => {
@@ -144,7 +181,7 @@ export const resendPaymentRequest = async (req: AuthRequest, res: Response) => {
       return errorResponse(res, 'Payment request not found', 400)
     }
 
-    console.log(`📤 Resend link: http://localhost:3000/payment/${request.publicToken}`)
+    console.log(` Resend link: http://localhost:3000/payment/${request.publicToken}`)
 
     return createdResponse(res, 'Payment request resent (mock)', null)
   } catch (error) {
@@ -182,7 +219,7 @@ export const markAsPaidPublic = async (req: Request, res: Response) => {
       publicToken,
     })
 
-    console.log(`📩 Client reported payment. Request ID: ${request._id}`)
+    console.log(`Client reported payment. Request ID: ${request._id}`)
 
     return createdResponse(res, 'Tu pago fue reportado. El comercio lo revisará y confirmará.',  {paymentRequest: request})
   } catch (error) {
