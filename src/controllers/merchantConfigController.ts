@@ -47,6 +47,11 @@ export const saveMerchantConfig = async (req: AuthRequest, res: Response) => {
     await config.save()
     return createdResponse(res, 'Configuración creada correctamente', config)
   } catch (error) {
+      console.error('[saveMerchantConfig] Error guardando config', {
+      merchantId: req.user.id,
+      body: req.body,
+      error,
+  });
     return errorResponse(res, 'Error al guardar configuración', 500, error)
   }
 }
