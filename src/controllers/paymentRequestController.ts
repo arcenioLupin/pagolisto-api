@@ -52,7 +52,7 @@ export const getPaymentRequests = async (req: AuthRequest, res: Response) => {
     const requests = await PaymentRequest.find({ merchantId: req.user.id }).sort({ createdAt: -1 })
 
     const updates = requests.map(async (r) => {
-      if (r.status === 'pending' && r.expirationDate && isBefore(new Date(r.expirationDate), today)) {
+      if ((r.status === 'pending' || r.status === 'review_pending') && r.expirationDate && isBefore(new Date(r.expirationDate), today)) {
         r.status = 'expired'
         await r.save()
       }

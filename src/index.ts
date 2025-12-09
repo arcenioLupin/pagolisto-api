@@ -44,6 +44,16 @@ app.use('/api/config', merchantConfigRoutes)
 app.use('/api/payment-requests', paymentRequestRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 
+// Healthcheck súper liviano
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    app: 'ControlWallet API',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  })
+})
+
 app.get('/', (_req: Request, res: Response) => {
   res.send('ControlWallet API running')
 })
